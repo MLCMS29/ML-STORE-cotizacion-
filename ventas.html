@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML'STORE – Registro de Ventas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ══ TOKENS ══ */
+    :root {
+      --gold:        #c9a84c;
+      --gold-light:  #f0d080;
+      --gold-dim:    #8a6a20;
+      --black:       #050505;
+      --surface:     #0e0e0e;
+      --surface2:    #161616;
+      --surface3:    #1c1c1c;
+      --border:      #2a2006;
+      --border-gold: #c9a84c44;
+      --text:        #f5f0e8;
+      --text-muted:  #8a7d60;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--black);
+      background-image: radial-gradient(ellipse 80% 40% at 50% -10%, #c9a84c0d 0%, transparent 70%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '★  ✦  ★  ✦  ★  ✦  ★  ✦  ★';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 2.4em;
+      color: #c9a84c18;
+      padding-top: 6px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      background: linear-gradient(180deg, #0a0a0a 0%, #111008 100%);
+      padding: 20px 36px 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      border-bottom: 1px solid var(--gold-dim);
+      box-shadow: 0 2px 40px #c9a84c18, 0 1px 0 #c9a84c55 inset;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.6rem;
+      letter-spacing: 3px;
+      line-height: 1;
+      background: linear-gradient(160deg, #f0d080 0%, #c9a84c 45%, #8a6a20 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 12px #c9a84c55);
+    }
+    .logo-sub {
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+    }
+    .nav-links a {
+      padding: 6px 14px;
+      background: #c9a84c12;
+      border: 1px solid var(--gold-dim);
+      border-radius: 6px;
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-links a:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    /* ── MAIN ── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 44px auto;
+      padding: 0 20px 70px;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-title h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+    .page-title h2 span {
+      background: linear-gradient(90deg, #f0d080, #c9a84c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .page-title p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid #2c2208;
+      border-radius: 18px;
+      padding: 32px;
+      box-shadow: 0 0 0 1px #c9a84c0a,
+                  0 20px 60px #00000088,
+                  0 0 80px #c9a84c08 inset;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 60px; height: 60px;
+      border-color: var(--gold-dim);
+      border-style: solid;
+      opacity: 0.4;
+    }
+    .card::before { top: 12px; left: 12px; border-width: 2px 0 0 2px; border-radius: 6px 0 0 0; }
+    .card::after  { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; border-radius: 0 0 6px 0; }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .section-label span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold-dim), transparent);
+    }
+
+    /* ── FORM ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    label.field-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    input, select {
+      background: var(--surface2);
+      border: 1px solid #2e2208;
+      border-radius: 10px;
+      color: var(--text);
+      padding: 11px 14px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px #c9a84c18;
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, background-position 0.4s;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #8a6a20, #c9a84c, #f0d080, #c9a84c, #8a6a20);
+      background-size: 200% auto;
+      color: #050505;
+      box-shadow: 0 4px 24px #c9a84c44;
+    }
+    .btn-primary:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 32px #c9a84c66;
+    }
+    .btn-secondary {
+      background: #1c1c1c;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+    }
+    .btn-secondary:hover {
+      background: #242010;
+      transform: translateY(-1px);
+    }
+
+    /* ── STATS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+    .stat-box {
+      background: #0a0906;
+      border: 1px solid #2a2006;
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .stat-box .label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .stat-box .value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+      color: var(--gold-light);
+      text-shadow: 0 0 16px #c9a84c55;
+    }
+
+    /* ── TABLE ── */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #2a2006;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface2);
+    }
+    thead {
+      background: #0a0906;
+      border-bottom: 2px solid var(--gold-dim);
+    }
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e1800;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+    tbody tr {
+      transition: background 0.15s;
+    }
+    tbody tr:hover {
+      background: #1a1608;
+    }
+    .precio { font-weight: 700; color: #b89040; }
+    .ganancia { font-weight: 700; color: #4ade80; text-shadow: 0 0 8px #22c55e33; }
+    .ganancia.negative { color: #f87171; text-shadow: 0 0 8px #ef444433; }
+
+    .btn-delete {
+      background: #2a0a0a;
+      border: 1px solid #5a1010;
+      color: #f87171;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-delete:hover {
+      background: #3a1010;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .icon {
+      font-size: 3rem;
+      opacity: 0.3;
+      margin-bottom: 16px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      header { flex-direction: column; text-align: center; gap: 12px; }
+      .nav-links { margin-left: 0; }
+      .card { padding: 22px 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      th, td { padding: 10px 12px; font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-text">ML'STORE</div>
+    <div class="logo-sub">Emprende · Revende · Gana</div>
+  </div>
+    <div class="nav-links">
+    <a href="index.html">&#x1F4B0; Cotizador</a>
+    <a href="calculadora.html">&#x1F9EE; Calculadora</a>
+    <a href="inventario.html">&#x1F4E6; Inventario</a>
+    <a href="ventas.html" class="active">&#x1F4CA; Ventas</a>
+    <a href="lista-negra.html">&#x1F6AB; Lista Negra</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">
+    <h2>Registro de <span>Ventas</span></h2>
+    <p>Lleva control de todas tus transacciones y visualiza tu margen de ganancia.</p>
+  </div>
+
+  <!-- ESTADÍSTICAS -->
+  <div class="stats">
+    <div class="stat-box">
+      <div class="label">Total Ventas</div>
+      <div class="value" id="stat-total">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Inversión Total</div>
+      <div class="value" id="stat-inversion">$0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Ingresos Total</div>
+      <div class="value" id="stat-ingresos">$0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Ganancia Neta</div>
+      <div class="value" id="stat-ganancia">$0</div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO DE NUEVA VENTA -->
+  <div class="card">
+    <div class="section-label"><span>➕ Registrar Nueva Venta</span></div>
+    <form id="ventaForm" onsubmit="registrarVenta(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label">Modelo iPhone</label>
+          <select id="modelo" required>
+            <option value="">-- Selecciona --</option>
+            <option value="iPhone 7">iPhone 7</option>
+            <option value="iPhone 7 Plus">iPhone 7 Plus</option>
+            <option value="iPhone 8">iPhone 8</option>
+            <option value="iPhone 8 Plus">iPhone 8 Plus</option>
+            <option value="iPhone X">iPhone X</option>
+            <option value="iPhone XR">iPhone XR</option>
+            <option value="iPhone XS">iPhone XS</option>
+            <option value="iPhone XS Max">iPhone XS Max</option>
+            <option value="iPhone 11">iPhone 11</option>
+            <option value="iPhone 11 Pro">iPhone 11 Pro</option>
+            <option value="iPhone 11 Pro Max">iPhone 11 Pro Max</option>
+            <option value="iPhone 12 Mini">iPhone 12 Mini</option>
+            <option value="iPhone 12">iPhone 12</option>
+            <option value="iPhone 12 Pro">iPhone 12 Pro</option>
+            <option value="iPhone 12 Pro Max">iPhone 12 Pro Max</option>
+            <option value="iPhone 13 Mini">iPhone 13 Mini</option>
+            <option value="iPhone 13">iPhone 13</option>
+            <option value="iPhone 13 Pro">iPhone 13 Pro</option>
+            <option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option>
+            <option value="iPhone 14">iPhone 14</option>
+            <option value="iPhone 14 Plus">iPhone 14 Plus</option>
+            <option value="iPhone 14 Pro">iPhone 14 Pro</option>
+            <option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option>
+            <option value="iPhone 15">iPhone 15</option>
+            <option value="iPhone 15 Plus">iPhone 15 Plus</option>
+            <option value="iPhone 15 Pro">iPhone 15 Pro</option>
+            <option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option>
+            <option value="iPhone 16">iPhone 16</option>
+            <option value="iPhone 16 Plus">iPhone 16 Plus</option>
+            <option value="iPhone 16 Pro">iPhone 16 Pro</option>
+            <option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Almacenamiento</label>
+          <select id="almacenamiento" required>
+            <option value="64 GB">64 GB</option>
+            <option value="128 GB">128 GB</option>
+            <option value="256 GB">256 GB</option>
+            <option value="512 GB">512 GB</option>
+            <option value="1 TB">1 TB</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Precio Comprado (MXN)</label>
+          <input type="number" id="precioCompra" min="0" step="0.01" required placeholder="5000" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Precio Vendido (MXN)</label>
+          <input type="number" id="precioVenta" min="0" step="0.01" required placeholder="7000" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Nombre del Comprador</label>
+          <input type="text" id="nombreComprador" required placeholder="Juan Pérez" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Fecha de Venta</label>
+          <input type="date" id="fecha" required />
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="limpiarForm()">🗑️ Limpiar</button>
+        <button type="submit" class="btn btn-primary">✅ Registrar Venta</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TABLA DE VENTAS -->
+  <div class="card">
+    <div class="section-label"><span>📋 Historial de Ventas</span></div>
+    <div class="table-container">
+      <table id="tablaVentas">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Modelo</th>
+            <th>Almac.</th>
+            <th>Comprado</th>
+            <th>Vendido</th>
+            <th>Ganancia</th>
+            <th>Comprador</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="ventasBody">
+          <tr>
+            <td colspan="9" class="empty-state">
+              <div class="icon">📦</div>
+              <div>No hay ventas registradas aún.</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ═══════════════════════════════════════════
+  //  GESTIÓN DE VENTAS (localStorage)
+  // ═══════════════════════════════════════════
+
+  let ventas = JSON.parse(localStorage.getItem('mlstore_ventas')) || [];
+
+  // Inicializar fecha de hoy en el campo
+  document.getElementById('fecha').valueAsDate = new Date();
+
+  function registrarVenta(e) {
+    e.preventDefault();
+
+    const venta = {
+      id: Date.now(),
+      fecha: document.getElementById('fecha').value,
+      modelo: document.getElementById('modelo').value,
+      almacenamiento: document.getElementById('almacenamiento').value,
+      precioCompra: parseFloat(document.getElementById('precioCompra').value),
+      precioVenta: parseFloat(document.getElementById('precioVenta').value),
+      comprador: document.getElementById('nombreComprador').value.trim(),
+    };
+
+    venta.ganancia = venta.precioVenta - venta.precioCompra;
+
+    ventas.unshift(venta); // agregar al inicio
+    guardarVentas();
+    renderVentas();
+    limpiarForm();
+
+    // feedback visual
+    alert('✅ Venta registrada correctamente');
+  }
+
+  function eliminarVenta(id) {
+    if (!confirm('¿Seguro que quieres eliminar esta venta?')) return;
+    ventas = ventas.filter(v => v.id !== id);
+    guardarVentas();
+    renderVentas();
+  }
+
+  function limpiarForm() {
+    document.getElementById('ventaForm').reset();
+    document.getElementById('fecha').valueAsDate = new Date();
+  }
+
+  function guardarVentas() {
+    localStorage.setItem('mlstore_ventas', JSON.stringify(ventas));
+  }
+
+  function mxn(n) {
+    return '$' + Math.round(n).toLocaleString('es-MX');
+  }
+
+  function renderVentas() {
+    const tbody = document.getElementById('ventasBody');
+    
+    if (ventas.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="empty-state">
+            <div class="icon">📦</div>
+            <div>No hay ventas registradas aún.</div>
+          </td>
+        </tr>
+      `;
+      actualizarStats();
+      return;
+    }
+
+    tbody.innerHTML = ventas.map((v, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${new Date(v.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+        <td><strong>${v.modelo}</strong></td>
+        <td>${v.almacenamiento}</td>
+        <td class="precio">${mxn(v.precioCompra)}</td>
+        <td class="precio">${mxn(v.precioVenta)}</td>
+        <td class="ganancia ${v.ganancia < 0 ? 'negative' : ''}">${mxn(v.ganancia)}</td>
+        <td>${v.comprador}</td>
+        <td><button class="btn-delete" onclick="eliminarVenta(${v.id})">🗑️</button></td>
+      </tr>
+    `).join('');
+
+    actualizarStats();
+  }
+
+  function actualizarStats() {
+    const totalVentas = ventas.length;
+    const inversion = ventas.reduce((sum, v) => sum + v.precioCompra, 0);
+    const ingresos = ventas.reduce((sum, v) => sum + v.precioVenta, 0);
+    const ganancia = ingresos - inversion;
+
+    document.getElementById('stat-total').textContent = totalVentas;
+    document.getElementById('stat-inversion').textContent = mxn(inversion);
+    document.getElementById('stat-ingresos').textContent = mxn(ingresos);
+    document.getElementById('stat-ganancia').textContent = mxn(ganancia);
+  }
+
+  // Renderizar al cargar
+  renderVentas();
+</script>
+
+</body>
+</html>

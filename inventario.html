@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML'STORE – Inventario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold:#c9a84c;--gold-light:#f0d080;--gold-dim:#8a6a20;
+      --black:#050505;--surface:#0e0e0e;--surface2:#161616;
+      --text:#f5f0e8;--text-muted:#8a7d60;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter','Segoe UI',sans-serif;background:var(--black);background-image:radial-gradient(ellipse 80% 40% at 50% -10%,#c9a84c0d 0%,transparent 70%);color:var(--text);min-height:100vh}
+    body::before{content:'★  ✦  ★  ✦  ★  ✦  ★  ✦  ★';position:fixed;top:0;left:0;right:0;text-align:center;font-size:.65rem;letter-spacing:2.4em;color:#c9a84c18;padding-top:6px;pointer-events:none;z-index:0}
+    header{position:relative;background:linear-gradient(180deg,#0a0a0a 0%,#111008 100%);padding:20px 36px 18px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--gold-dim);box-shadow:0 2px 40px #c9a84c18,0 1px 0 #c9a84c55 inset}
+    header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold-light),var(--gold),transparent)}
+    .logo-text{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:3px;line-height:1;background:linear-gradient(160deg,#f0d080 0%,#c9a84c 45%,#8a6a20 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px #c9a84c55)}
+    .logo-sub{font-size:.62rem;letter-spacing:.28em;color:var(--gold-dim);text-transform:uppercase;margin-top:2px}
+    .nav-links{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+    .nav-links a{padding:6px 12px;background:#c9a84c12;border:1px solid var(--gold-dim);border-radius:6px;color:var(--gold);text-decoration:none;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;transition:background .2s,color .2s;white-space:nowrap}
+    .nav-links a:hover,.nav-links a.active{background:var(--gold);color:var(--black)}
+    main{position:relative;z-index:1;max-width:1100px;margin:44px auto;padding:0 20px 70px}
+    .page-title{text-align:center;margin-bottom:36px}
+    .page-title h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;color:#fff}
+    .page-title h2 span{background:linear-gradient(90deg,#f0d080,#c9a84c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .page-title p{font-size:.82rem;color:var(--text-muted);margin-top:6px;letter-spacing:.06em}
+    .card{background:var(--surface);border:1px solid #2c2208;border-radius:18px;padding:32px;box-shadow:0 0 0 1px #c9a84c0a,0 20px 60px #00000088;position:relative;overflow:hidden;margin-bottom:30px}
+    .card::before,.card::after{content:'';position:absolute;width:60px;height:60px;border-color:var(--gold-dim);border-style:solid;opacity:.4}
+    .card::before{top:12px;left:12px;border-width:2px 0 0 2px;border-radius:6px 0 0 0}
+    .card::after{bottom:12px;right:12px;border-width:0 2px 2px 0;border-radius:0 0 6px 0}
+    .section-label{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+    .section-label span{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:3px;color:var(--gold)}
+    .section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold-dim),transparent)}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:30px}
+    .stat-box{background:#0a0906;border:1px solid #2a2006;border-radius:12px;padding:16px 18px;text-align:center;position:relative;overflow:hidden}
+    .stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+    .stat-box .label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+    .stat-box .value{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1px;color:var(--gold-light);text-shadow:0 0 16px #c9a84c55}
+    .stat-box .value.alerta{color:#f87171;text-shadow:0 0 16px #ef444455}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    label.field-label{font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--gold);text-transform:uppercase}
+    input,select,textarea{background:var(--surface2);border:1px solid #2e2208;border-radius:10px;color:var(--text);padding:11px 14px;font-size:.95rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s}
+    input:focus,select:focus,textarea:focus{border-color:var(--gold-dim);box-shadow:0 0 0 3px #c9a84c18}
+    select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;cursor:pointer}
+    textarea{resize:vertical;min-height:70px}
+    .btn{padding:12px 22px;border:none;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:3px;cursor:pointer;transition:transform .15s,box-shadow .2s,background-position .4s}
+    .btn-primary{background:linear-gradient(90deg,#8a6a20,#c9a84c,#f0d080,#c9a84c,#8a6a20);background-size:200% auto;color:#050505;box-shadow:0 4px 24px #c9a84c44}
+    .btn-primary:hover{background-position:right center;transform:translateY(-2px);box-shadow:0 6px 32px #c9a84c66}
+    .btn-secondary{background:#1c1c1c;border:1px solid var(--gold-dim);color:var(--gold)}
+    .btn-secondary:hover{background:#242010;transform:translateY(-1px)}
+    .btn-success{background:linear-gradient(90deg,#14532d,#16a34a);color:#fff;box-shadow:0 4px 18px #16a34a33}
+    .btn-success:hover{opacity:.9;transform:translateY(-1px)}
+    .table-container{overflow-x:auto;border-radius:12px;border:1px solid #2a2006}
+    table{width:100%;border-collapse:collapse;background:var(--surface2)}
+    thead{background:#0a0906;border-bottom:2px solid var(--gold-dim)}
+    th{padding:13px 14px;text-align:left;font-family:'Bebas Neue',sans-serif;font-size:.82rem;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+    td{padding:11px 14px;border-bottom:1px solid #1e1800;font-size:.86rem;color:var(--text)}
+    tbody tr{transition:background .15s}
+    tbody tr:hover{background:#1a1608}
+    .precio{font-weight:700;color:#b89040}
+    .dias{font-weight:700;font-size:.82rem}
+    .dias.ok{color:#4ade80}
+    .dias.warn{color:#fbbf24}
+    .dias.hot{color:#f87171;animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.05em}
+    .badge-disponible{background:#14532d44;border:1px solid #16a34a66;color:#4ade80}
+    .badge-vendido{background:#312e8144;border:1px solid #6366f166;color:#a5b4fc}
+    .btn-vender{background:#1a2a10;border:1px solid #365a14;color:#86efac;padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:background .2s}
+    .btn-vender:hover{background:#22381a}
+    .btn-delete{background:#2a0a0a;border:1px solid #5a1010;color:#f87171;padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:background .2s}
+    .btn-delete:hover{background:#3a1010}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+    .empty-state .icon{font-size:3rem;opacity:.3;margin-bottom:16px}
+    .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .filter-bar select,.filter-bar input{padding:8px 12px;font-size:.85rem;border-radius:8px}
+    @media(max-width:700px){header{flex-direction:column;text-align:center;gap:10px}.nav-links{margin-left:0;justify-content:center}.card{padding:20px 14px}th,td{padding:9px 10px;font-size:.8rem}}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo-text">ML'STORE</div>
+    <div class="logo-sub">Emprende · Revende · Gana</div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">💰 Cotizador</a>
+    <a href="calculadora.html">🧮 Calculadora</a>
+    <a href="inventario.html" class="active">📦 Inventario</a>
+    <a href="ventas.html">📊 Ventas</a>
+    <a href="lista-negra.html">🚫 Lista Negra</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">
+    <h2>Control de <span>Inventario</span></h2>
+    <p>Equipos en tu poder — ve cuántos días llevan y cuáles necesitan venderse ya.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box"><div class="label">En Stock</div><div class="value" id="st-stock">0</div></div>
+    <div class="stat-box"><div class="label">Inversión Activa</div><div class="value" id="st-inversion">$0</div></div>
+    <div class="stat-box"><div class="label">Valor Reventa Est.</div><div class="value" id="st-reventa">$0</div></div>
+    <div class="stat-box"><div class="label">+30 días (urgente)</div><div class="value alerta" id="st-urgente">0</div></div>
+  </div>
+
+  <!-- FORM -->
+  <div class="card">
+    <div class="section-label"><span>➕ Agregar Equipo al Inventario</span></div>
+    <form id="invForm" onsubmit="agregarEquipo(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label">Modelo</label>
+          <select id="inv-modelo" required>
+            <option value="">-- Selecciona --</option>
+            <option>iPhone 7</option><option>iPhone 7 Plus</option>
+            <option>iPhone 8</option><option>iPhone 8 Plus</option>
+            <option>iPhone X</option><option>iPhone XR</option>
+            <option>iPhone XS</option><option>iPhone XS Max</option>
+            <option>iPhone 11</option><option>iPhone 11 Pro</option><option>iPhone 11 Pro Max</option>
+            <option>iPhone 12 Mini</option><option>iPhone 12</option><option>iPhone 12 Pro</option><option>iPhone 12 Pro Max</option>
+            <option>iPhone 13 Mini</option><option>iPhone 13</option><option>iPhone 13 Pro</option><option>iPhone 13 Pro Max</option>
+            <option>iPhone 14</option><option>iPhone 14 Plus</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option>
+            <option>iPhone 15</option><option>iPhone 15 Plus</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option>
+            <option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Almacenamiento</label>
+          <select id="inv-storage" required>
+            <option value="64 GB">64 GB</option>
+            <option value="128 GB" selected>128 GB</option>
+            <option value="256 GB">256 GB</option>
+            <option value="512 GB">512 GB</option>
+            <option value="1 TB">1 TB</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Color</label>
+          <input type="text" id="inv-color" placeholder="Negro, Blanco, Azul…" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">IMEI</label>
+          <input type="text" id="inv-imei" placeholder="15 dígitos" maxlength="15" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Precio Comprado (MXN)</label>
+          <input type="number" id="inv-compra" min="0" required placeholder="5000" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Precio Reventa Objetivo</label>
+          <input type="number" id="inv-reventa" min="0" required placeholder="7000" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Fecha de Compra</label>
+          <input type="date" id="inv-fecha" required />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Condición</label>
+          <select id="inv-condicion">
+            <option value="Como nuevo">✨ Como nuevo</option>
+            <option value="Bueno" selected>👍 Bueno</option>
+            <option value="Regular">😐 Regular</option>
+            <option value="Con detalles">🔧 Con detalles</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:18px">
+        <label class="field-label">Notas</label>
+        <textarea id="inv-notas" placeholder="Ej: pantalla rayada leve, batería 89%, viene con caja…"></textarea>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('invForm').reset();document.getElementById('inv-fecha').valueAsDate=new Date()">🗑️ Limpiar</button>
+        <button type="submit" class="btn btn-primary">📦 Agregar al Inventario</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card">
+    <div class="section-label"><span>📋 Equipos en Stock</span></div>
+    <div class="filter-bar">
+      <select id="filtroEstado" onchange="renderInventario()">
+        <option value="todos">Todos</option>
+        <option value="disponible">Solo disponibles</option>
+        <option value="vendido">Solo vendidos</option>
+      </select>
+      <input type="text" id="filtroBusca" placeholder="🔍 Buscar modelo…" oninput="renderInventario()" style="flex:1;min-width:160px" />
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Modelo</th><th>Almac.</th><th>Color</th>
+            <th>Comprado</th><th>Reventa</th><th>Condición</th>
+            <th>Días</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="invBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+  let inventario = JSON.parse(localStorage.getItem('mlstore_inventario')) || [];
+  document.getElementById('inv-fecha').valueAsDate = new Date();
+
+  function mxn(n){ return '$' + Math.round(n).toLocaleString('es-MX'); }
+
+  function diasDesde(fecha){
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const d = new Date(fecha + 'T00:00:00');
+    return Math.floor((hoy - d) / 86400000);
+  }
+
+  function agregarEquipo(e){
+    e.preventDefault();
+    const eq = {
+      id: Date.now(),
+      modelo: document.getElementById('inv-modelo').value,
+      storage: document.getElementById('inv-storage').value,
+      color: document.getElementById('inv-color').value || '—',
+      imei: document.getElementById('inv-imei').value || '—',
+      compra: parseFloat(document.getElementById('inv-compra').value),
+      reventa: parseFloat(document.getElementById('inv-reventa').value),
+      fecha: document.getElementById('inv-fecha').value,
+      condicion: document.getElementById('inv-condicion').value,
+      notas: document.getElementById('inv-notas').value,
+      estado: 'disponible'
+    };
+    inventario.unshift(eq);
+    guardar(); renderInventario();
+    document.getElementById('invForm').reset();
+    document.getElementById('inv-fecha').valueAsDate = new Date();
+  }
+
+  function marcarVendido(id){
+    const eq = inventario.find(e => e.id === id);
+    if(!eq) return;
+    if(!confirm(`¿Marcar ${eq.modelo} como vendido?\n\nTe recomiendo ir a la página de Ventas para registrar el precio de venta.`)) return;
+    eq.estado = 'vendido';
+    guardar(); renderInventario();
+  }
+
+  function eliminar(id){
+    if(!confirm('¿Eliminar este equipo del inventario?')) return;
+    inventario = inventario.filter(e => e.id !== id);
+    guardar(); renderInventario();
+  }
+
+  function guardar(){ localStorage.setItem('mlstore_inventario', JSON.stringify(inventario)); }
+
+  function renderInventario(){
+    const filtroEstado = document.getElementById('filtroEstado').value;
+    const busca = document.getElementById('filtroBusca').value.toLowerCase();
+    const tbody = document.getElementById('invBody');
+
+    let lista = inventario.filter(e => {
+      const pasaEstado = filtroEstado === 'todos' || e.estado === filtroEstado;
+      const pasaBusca = e.modelo.toLowerCase().includes(busca);
+      return pasaEstado && pasaBusca;
+    });
+
+    if(lista.length === 0){
+      tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><div class="icon">📦</div><div>Sin equipos en esta vista.</div></td></tr>`;
+      actualizarStats(); return;
+    }
+
+    tbody.innerHTML = lista.map((e,i) => {
+      const dias = e.estado === 'disponible' ? diasDesde(e.fecha) : '✓';
+      let diasClass = 'dias ok';
+      if(typeof dias === 'number'){
+        if(dias >= 30) diasClass = 'dias hot';
+        else if(dias >= 15) diasClass = 'dias warn';
+      }
+      const estadoBadge = e.estado === 'disponible'
+        ? '<span class="badge badge-disponible">En venta</span>'
+        : '<span class="badge badge-vendido">Vendido</span>';
+      const acciones = e.estado === 'disponible'
+        ? `<button class="btn-vender" onclick="marcarVendido(${e.id})">✅ Vendido</button> `
+        : '';
+      return `<tr>
+        <td>${i+1}</td>
+        <td><strong>${e.modelo}</strong><br><span style="color:var(--text-muted);font-size:.75rem">${e.imei !== '—' ? 'IMEI: '+e.imei : ''}</span></td>
+        <td>${e.storage}</td>
+        <td>${e.color}</td>
+        <td class="precio">${mxn(e.compra)}</td>
+        <td class="precio">${mxn(e.reventa)}</td>
+        <td>${e.condicion}</td>
+        <td class="${diasClass}">${typeof dias === 'number' ? dias + 'd' : dias}</td>
+        <td>${estadoBadge}</td>
+        <td>${acciones}<button class="btn-delete" onclick="eliminar(${e.id})">🗑️</button></td>
+      </tr>`;
+    }).join('');
+
+    actualizarStats();
+  }
+
+  function actualizarStats(){
+    const disponibles = inventario.filter(e => e.estado === 'disponible');
+    const urgentes = disponibles.filter(e => diasDesde(e.fecha) >= 30);
+    document.getElementById('st-stock').textContent = disponibles.length;
+    document.getElementById('st-inversion').textContent = mxn(disponibles.reduce((s,e) => s+e.compra, 0));
+    document.getElementById('st-reventa').textContent = mxn(disponibles.reduce((s,e) => s+e.reventa, 0));
+    document.getElementById('st-urgente').textContent = urgentes.length;
+  }
+
+  renderInventario();
+</script>
+</body>
+</html>

@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML'STORE – Cotizador de iPhones</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ══ TOKENS ══ */
+    :root {
+      --gold:        #c9a84c;
+      --gold-light:  #f0d080;
+      --gold-dim:    #8a6a20;
+      --black:       #050505;
+      --surface:     #0e0e0e;
+      --surface2:    #161616;
+      --surface3:    #1c1c1c;
+      --border:      #2a2006;
+      --border-gold: #c9a84c44;
+      --text:        #f5f0e8;
+      --text-muted:  #8a7d60;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--black);
+      background-image:
+        radial-gradient(ellipse 80% 40% at 50% -10%, #c9a84c0d 0%, transparent 70%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── PARTÍCULAS DORADAS DECORATIVAS ── */
+    body::before {
+      content: '★  ✦  ★  ✦  ★  ✦  ★  ✦  ★';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 2.4em;
+      color: #c9a84c18;
+      padding-top: 6px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      background: linear-gradient(180deg, #0a0a0a 0%, #111008 100%);
+      padding: 20px 36px 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      border-bottom: 1px solid var(--gold-dim);
+      box-shadow: 0 2px 40px #c9a84c18, 0 1px 0 #c9a84c55 inset;
+    }
+    /* línea brillante en el borde superior del header */
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.6rem;
+      letter-spacing: 3px;
+      line-height: 1;
+      background: linear-gradient(160deg, #f0d080 0%, #c9a84c 45%, #8a6a20 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+      filter: drop-shadow(0 0 12px #c9a84c55);
+    }
+    .logo-sub {
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+    }
+    .nav-links a {
+      padding: 6px 14px;
+      background: #c9a84c12;
+      border: 1px solid var(--gold-dim);
+      border-radius: 6px;
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-links a:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    /* ── MAIN ── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 880px;
+      margin: 44px auto;
+      padding: 0 20px 70px;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-title h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+    .page-title h2 span {
+      background: linear-gradient(90deg, #f0d080, #c9a84c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .page-title p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid #2c2208;
+      border-radius: 18px;
+      padding: 38px;
+      box-shadow: 0 0 0 1px #c9a84c0a,
+                  0 20px 60px #00000088,
+                  0 0 80px #c9a84c08 inset;
+      position: relative;
+      overflow: hidden;
+    }
+    /* esquinas doradas decorativas */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 60px; height: 60px;
+      border-color: var(--gold-dim);
+      border-style: solid;
+      opacity: 0.4;
+    }
+    .card::before { top: 12px; left: 12px; border-width: 2px 0 0 2px; border-radius: 6px 0 0 0; }
+    .card::after  { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; border-radius: 0 0 6px 0; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .section-label span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold-dim), transparent);
+    }
+
+    /* ── GRID ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label.field-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    select {
+      background: var(--surface2);
+      border: 1px solid #2e2208;
+      border-radius: 10px;
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+    select:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px #c9a84c18;
+    }
+    select option { background: #111; }
+    select optgroup { color: var(--gold); font-weight: 700; }
+
+    /* ── SLIDER ── */
+    .slider-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--gold) var(--pct, 62.5%), #2a2006 var(--pct, 62.5%));
+      cursor: pointer;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f0d080, #c9a84c);
+      border: 2px solid #0e0e0e;
+      box-shadow: 0 0 8px #c9a84c88;
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f0d080, #c9a84c);
+      border: 2px solid #0e0e0e;
+      box-shadow: 0 0 8px #c9a84c88;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      text-align: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      color: var(--gold-light);
+      text-shadow: 0 0 20px #c9a84c66;
+    }
+
+    /* ── CHECKBOXES ── */
+    .check-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      gap: 9px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--surface2);
+      border: 1px solid #252008;
+      border-radius: 9px;
+      padding: 10px 13px;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+      font-size: 0.83rem;
+      color: #b0a880;
+      user-select: none;
+    }
+    .check-item:hover {
+      border-color: var(--gold-dim);
+      background: #1a1608;
+      color: var(--text);
+    }
+    .check-item input[type="checkbox"] {
+      accent-color: var(--gold);
+      width: 15px; height: 15px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .check-item.checked {
+      border-color: var(--gold);
+      background: #1e1808;
+      color: var(--gold-light);
+      box-shadow: 0 0 12px #c9a84c22;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin: 30px 0;
+    }
+
+    /* ── BTN ── */
+    .btn-cotizar {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(90deg, #8a6a20, #c9a84c, #f0d080, #c9a84c, #8a6a20);
+      background-size: 200% auto;
+      border: none;
+      border-radius: 12px;
+      color: #050505;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 4px;
+      cursor: pointer;
+      transition: background-position 0.4s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px #c9a84c44;
+      margin-top: 8px;
+    }
+    .btn-cotizar:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 32px #c9a84c66;
+    }
+    .btn-cotizar:active { transform: translateY(0); }
+
+    /* ── RESULTADO ── */
+    #resultado {
+      display: none;
+      margin-top: 34px;
+      background: linear-gradient(160deg, #0d0c08, #141208);
+      border: 1px solid var(--gold-dim);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 0 40px #c9a84c18, 0 0 0 1px #c9a84c0a;
+      animation: fadeIn 0.45s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .resultado-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid #2a2006;
+    }
+    .resultado-header .icon { font-size: 2.2rem; filter: drop-shadow(0 0 8px #c9a84c88); }
+    .resultado-header .title { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .resultado-header .modelo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: #fff; }
+
+    .precio-rango {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .precio-box {
+      flex: 1;
+      min-width: 150px;
+      background: #0a0906;
+      border-radius: 12px;
+      padding: 16px 18px;
+      text-align: center;
+      border: 1px solid #2a2006;
+      position: relative;
+      overflow: hidden;
+    }
+    .precio-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .precio-box.bajo::before   { background: linear-gradient(90deg, transparent, #ef4444, transparent); }
+    .precio-box.medio::before  { background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+    .precio-box.alto::before   { background: linear-gradient(90deg, transparent, #22c55e, transparent); }
+    .precio-box.reventa::before{ background: linear-gradient(90deg, transparent, #f0d080, transparent); }
+
+    .precio-box .label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .precio-box .monto {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.75rem;
+      letter-spacing: 1px;
+    }
+    .precio-box.bajo .monto    { color: #f87171; text-shadow: 0 0 16px #ef444455; }
+    .precio-box.medio .monto   { color: var(--gold-light); text-shadow: 0 0 16px #c9a84c55; }
+    .precio-box.alto .monto    { color: #4ade80; text-shadow: 0 0 16px #22c55e55; }
+    .precio-box.reventa .monto { color: var(--gold-light); text-shadow: 0 0 20px #f0d08066; }
+
+    .desglose {
+      background: #080705;
+      border: 1px solid #1e1800;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .desglose h4 {
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--gold);
+      font-size: 0.9rem;
+      letter-spacing: 3px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .desglose-fila {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.86rem;
+      padding: 6px 0;
+      border-bottom: 1px solid #1a1500;
+      color: var(--text-muted);
+    }
+    .desglose-fila:last-child { border-bottom: none; }
+    .desglose-fila span:last-child { color: var(--text); font-weight: 600; }
+
+    .advertencia {
+      background: #120e04;
+      border: 1px solid #c9a84c33;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: #b89040;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      line-height: 1.55;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 620px) {
+      .form-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; text-align: center; gap: 8px; }
+      .nav-links { margin-left: 0; }
+      .card { padding: 22px 16px; }
+      .precio-rango { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-text">ML'STORE</div>
+    <div class="logo-sub">Emprende &nbsp;·&nbsp; Revende &nbsp;·&nbsp; Gana</div>
+  </div>
+    <div class="nav-links">
+    <a href="index.html" class="active">&#x1F4B0; Cotizador</a>
+    <a href="calculadora.html">&#x1F9EE; Calculadora</a>
+    <a href="inventario.html">&#x1F4E6; Inventario</a>
+    <a href="ventas.html">&#x1F4CA; Ventas</a>
+    <a href="lista-negra.html">&#x1F6AB; Lista Negra</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">
+    <h2>Cotizador de <span>iPhones Usados</span></h2>
+    <p>Ingresa los datos del equipo y obtén el precio justo de compra para mantener tu margen.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-label"><span>📋 Datos del Equipo</span></div>
+    <div class="form-grid">
+
+      <!-- MODELO -->
+      <div class="form-group">
+        <label class="field-label">Modelo</label>
+        <select id="modelo">
+          <option value="">-- Selecciona --</option>
+          <optgroup label="iPhone 7 / 8">
+            <option value="7">iPhone 7</option>
+            <option value="7p">iPhone 7 Plus</option>
+            <option value="8">iPhone 8</option>
+            <option value="8p">iPhone 8 Plus</option>
+          </optgroup>
+          <optgroup label="iPhone X / XS / XR">
+            <option value="x">iPhone X</option>
+            <option value="xr">iPhone XR</option>
+            <option value="xs">iPhone XS</option>
+            <option value="xsmax">iPhone XS Max</option>
+          </optgroup>
+          <optgroup label="iPhone 11">
+            <option value="11">iPhone 11</option>
+            <option value="11p">iPhone 11 Pro</option>
+            <option value="11pm">iPhone 11 Pro Max</option>
+          </optgroup>
+          <optgroup label="iPhone 12">
+            <option value="12m">iPhone 12 Mini</option>
+            <option value="12">iPhone 12</option>
+            <option value="12p">iPhone 12 Pro</option>
+            <option value="12pm">iPhone 12 Pro Max</option>
+          </optgroup>
+          <optgroup label="iPhone 13">
+            <option value="13m">iPhone 13 Mini</option>
+            <option value="13">iPhone 13</option>
+            <option value="13p">iPhone 13 Pro</option>
+            <option value="13pm">iPhone 13 Pro Max</option>
+          </optgroup>
+          <optgroup label="iPhone 14">
+            <option value="14">iPhone 14</option>
+            <option value="14p">iPhone 14 Plus</option>
+            <option value="14p2">iPhone 14 Pro</option>
+            <option value="14pm">iPhone 14 Pro Max</option>
+          </optgroup>
+          <optgroup label="iPhone 15">
+            <option value="15">iPhone 15</option>
+            <option value="15p">iPhone 15 Plus</option>
+            <option value="15p2">iPhone 15 Pro</option>
+            <option value="15pm">iPhone 15 Pro Max</option>
+          </optgroup>
+          <optgroup label="iPhone 16">
+            <option value="16">iPhone 16</option>
+            <option value="16p">iPhone 16 Plus</option>
+            <option value="16p2">iPhone 16 Pro</option>
+            <option value="16pm">iPhone 16 Pro Max</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- ALMACENAMIENTO -->
+      <div class="form-group">
+        <label class="field-label">Almacenamiento</label>
+        <select id="storage">
+          <option value="64">64 GB</option>
+          <option value="128" selected>128 GB</option>
+          <option value="256">256 GB</option>
+          <option value="512">512 GB</option>
+          <option value="1024">1 TB</option>
+        </select>
+      </div>
+
+      <!-- VIDA DE LA PILA -->
+      <div class="form-group full">
+        <label class="field-label">🔋 Salud de la Batería</label>
+        <div class="slider-wrap">
+          <input type="range" id="bateria" min="60" max="100" value="85" step="1" oninput="updateBateria(this.value)" />
+          <div class="slider-labels"><span>60%</span><span>70%</span><span>80%</span><span>90%</span><span>100%</span></div>
+          <div class="slider-value" id="bateriaVal">85%</div>
+        </div>
+      </div>
+
+      <!-- ESTÉTICA -->
+      <div class="form-group">
+        <label class="field-label">Estética / Condición Visual</label>
+        <select id="estetica">
+          <option value="10">✨ Como nuevo (sin rayaduras)</option>
+          <option value="8" selected>👍 Bueno (rayaduras leves)</option>
+          <option value="6">😐 Regular (golpes visibles)</option>
+          <option value="3">😬 Dañado (pantalla rota / marco)</option>
+        </select>
+      </div>
+
+      <!-- FUNCIONES -->
+      <div class="form-group">
+        <label class="field-label">Funcionamiento General</label>
+        <select id="funciones">
+          <option value="10">✅ Todo funciona perfecto</option>
+          <option value="8" selected>🔧 Falla menor (botón, altavoz…)</option>
+          <option value="5">⚠️ Falla importante (Touch, Face ID…)</option>
+          <option value="2">❌ Solo enciende / no funciona bien</option>
+        </select>
+      </div>
+
+    </div><!-- /form-grid -->
+
+    <hr class="divider" />
+
+    <!-- PROBLEMAS ESPECÍFICOS -->
+    <div class="section-label"><span>⚠️ Problemas Específicos</span></div>
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="field-label" style="margin-bottom:4px;">Descuentos adicionales por fallas</label>
+      <div class="check-group" id="problemas">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="200" /> Pantalla manchada / líneas
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="150" /> Cámara dañada
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="300" /> Touch ID / Face ID roto
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="100" /> Altavoz con falla
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="200" /> Sin sonido / micrófono
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="400" /> iCloud activado (bloqueado)
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="100" /> Sin cargador ni accesorios
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="150" /> Vibrador no funciona
+        </label>
+      </div>
+    </div>
+
+    <!-- EXTRAS POSITIVOS -->
+    <div class="section-label" style="margin-top:22px;"><span>✨ Extras que Suman Valor</span></div>
+    <div class="form-group" style="margin-bottom: 24px;">
+      <label class="field-label" style="margin-bottom:4px;">Bonificaciones adicionales</label>
+      <div class="check-group" id="extras">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="200" /> Caja original
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="150" /> Accesorios Apple originales
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="300" /> Factura / Garantía Apple
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-cotizar" onclick="cotizar()">� Calcular Precio de Compra</button>
+
+    <!-- RESULTADO -->
+    <div id="resultado">
+      <div class="resultado-header">
+        <div class="icon">📱</div>
+        <div>
+          <div class="title">Cotización para</div>
+          <div class="modelo" id="res-modelo">—</div>
+        </div>
+      </div>
+
+      <div class="precio-rango">
+        <div class="precio-box bajo">
+          <div class="label">Mínimo a ofrecer</div>
+          <div class="monto" id="res-min">—</div>
+        </div>
+        <div class="precio-box medio">
+          <div class="label">Precio sugerido</div>
+          <div class="monto" id="res-sug">—</div>
+        </div>
+        <div class="precio-box alto">
+          <div class="label">Máximo razonable</div>
+          <div class="monto" id="res-max">—</div>
+        </div>
+        <div class="precio-box reventa">
+          <div class="label">Precio de reventa est.</div>
+          <div class="monto" id="res-rev">—</div>
+        </div>
+      </div>
+
+      <div class="desglose">
+        <h4>Desglose del cálculo</h4>
+        <div class="desglose-fila"><span>Base del modelo (128GB)</span><span id="d-base">—</span></div>
+        <div class="desglose-fila"><span>Ajuste por almacenamiento</span><span id="d-storage">—</span></div>
+        <div class="desglose-fila"><span>Ajuste por batería</span><span id="d-bat">—</span></div>
+        <div class="desglose-fila"><span>Ajuste por estética</span><span id="d-est">—</span></div>
+        <div class="desglose-fila"><span>Ajuste por funcionamiento</span><span id="d-func">—</span></div>
+        <div class="desglose-fila"><span>Descuento por problemas</span><span id="d-prob">—</span></div>
+        <div class="desglose-fila"><span>Bonus por extras</span><span id="d-extra">—</span></div>
+        <div class="desglose-fila"><span style="color:#f5f0e8;font-weight:700;">Valor de reventa estimado</span><span id="d-rev2" style="color:#f0d080;font-weight:700;">—</span></div>
+        <div class="desglose-fila"><span style="color:#f5f0e8;font-weight:700;">Tu margen aplicado (25–35%)</span><span id="d-margen" style="color:#4ade80;font-weight:700;">—</span></div>
+      </div>
+
+      <div class="advertencia">
+        ⚠️
+        <span>
+          Estos precios son <strong>estimados</strong> basados en el mercado mexicano (Mercado Libre, Elektra, Mobo). Verifica siempre el precio actual en tu plaza antes de cerrar un trato. Los precios en dólares no están contemplados.
+        </span>
+      </div>
+    </div>
+
+  </div><!-- /card -->
+</main>
+
+<script>
+  // ──────────────────────────────────────────
+  //  PRECIOS BASE de reventa (MXN) · 128 GB
+  //  Referencia: mercado mexicano usado 2025
+  // ──────────────────────────────────────────
+  const PRECIOS_BASE = {
+    "7":    1400,
+    "7p":   1700,
+    "8":    1800,
+    "8p":   2100,
+    "x":    2500,
+    "xr":   3000,
+    "xs":   3200,
+    "xsmax":3600,
+    "11":   4200,
+    "11p":  5500,
+    "11pm": 6000,
+    "12m":  4500,
+    "12":   5200,
+    "12p":  6500,
+    "12pm": 7200,
+    "13m":  5500,
+    "13":   6800,
+    "13p":  8500,
+    "13pm": 9500,
+    "14":   8500,
+    "14p":  9200,
+    "14p2": 11000,
+    "14pm": 12000,
+    "15":   10500,
+    "15p":  11500,
+    "15p2": 13500,
+    "15pm": 15000,
+    "16":   13000,
+    "16p":  14000,
+    "16p2": 16500,
+    "16pm": 18500,
+  };
+
+  const NOMBRES = {
+    "7":"iPhone 7","7p":"iPhone 7 Plus","8":"iPhone 8","8p":"iPhone 8 Plus",
+    "x":"iPhone X","xr":"iPhone XR","xs":"iPhone XS","xsmax":"iPhone XS Max",
+    "11":"iPhone 11","11p":"iPhone 11 Pro","11pm":"iPhone 11 Pro Max",
+    "12m":"iPhone 12 Mini","12":"iPhone 12","12p":"iPhone 12 Pro","12pm":"iPhone 12 Pro Max",
+    "13m":"iPhone 13 Mini","13":"iPhone 13","13p":"iPhone 13 Pro","13pm":"iPhone 13 Pro Max",
+    "14":"iPhone 14","14p":"iPhone 14 Plus","14p2":"iPhone 14 Pro","14pm":"iPhone 14 Pro Max",
+    "15":"iPhone 15","15p":"iPhone 15 Plus","15p2":"iPhone 15 Pro","15pm":"iPhone 15 Pro Max",
+    "16":"iPhone 16","16p":"iPhone 16 Plus","16p2":"iPhone 16 Pro","16pm":"iPhone 16 Pro Max",
+  };
+
+  // Multiplicadores por almacenamiento (relativo a 128GB)
+  const STORAGE_MULT = { "64": 0.88, "128": 1.0, "256": 1.13, "512": 1.25, "1024": 1.38 };
+
+  function updateBateria(v) {
+    document.getElementById('bateriaVal').textContent = v + '%';
+    // actualiza el gradiente del track
+    const pct = ((v - 60) / (100 - 60)) * 100;
+    const slider = document.getElementById('bateria');
+    slider.style.setProperty('--pct', pct + '%');
+  }
+
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+  }
+
+  function mxn(n) {
+    return '$' + Math.round(n).toLocaleString('es-MX');
+  }
+
+  function cotizar() {
+    const modeloKey = document.getElementById('modelo').value;
+    if (!modeloKey) { alert('Por favor selecciona un modelo de iPhone.'); return; }
+
+    const storageKey  = document.getElementById('storage').value;
+    const bateria     = parseInt(document.getElementById('bateria').value);
+    const esteticaVal = parseInt(document.getElementById('estetica').value);
+    const funcionVal  = parseInt(document.getElementById('funciones').value);
+
+    // 1. Base
+    const base = PRECIOS_BASE[modeloKey];
+
+    // 2. Almacenamiento
+    const storageMult = STORAGE_MULT[storageKey];
+    const baseStorage = base * storageMult;
+    const storageAdj  = baseStorage - base;
+
+    // 3. Batería
+    let batAdj = 0;
+    if      (bateria >= 95) batAdj =  base * 0.05;
+    else if (bateria >= 90) batAdj =  base * 0.02;
+    else if (bateria >= 85) batAdj =  0;
+    else if (bateria >= 80) batAdj = -base * 0.05;
+    else if (bateria >= 75) batAdj = -base * 0.10;
+    else if (bateria >= 70) batAdj = -base * 0.17;
+    else                    batAdj = -base * 0.25;
+
+    // 4. Estética (score 3-10 → ajuste porcentual)
+    const estMap = { 10: 0, 8: -0.07, 6: -0.15, 3: -0.30 };
+    const estAdj = base * (estMap[esteticaVal] ?? -0.07);
+
+    // 5. Funciones
+    const funcMap = { 10: 0, 8: -0.05, 5: -0.15, 2: -0.35 };
+    const funcAdj = base * (funcMap[funcionVal] ?? -0.05);
+
+    // 6. Problemas específicos (suma fija MXN)
+    let probDesc = 0;
+    document.querySelectorAll('#problemas .check-item input:checked').forEach(cb => {
+      probDesc += parseInt(cb.value);
+    });
+
+    // 7. Extras positivos
+    let extraBonus = 0;
+    document.querySelectorAll('#extras .check-item input:checked').forEach(cb => {
+      extraBonus += parseInt(cb.value);
+    });
+
+    // Valor de reventa estimado
+    const reventa = baseStorage + batAdj + estAdj + funcAdj - probDesc + extraBonus;
+    const reventaFinal = Math.max(reventa, base * 0.20); // piso mínimo
+
+    // Precio de compra = reventa menos margen (25% – 35%)
+    const compraMax = reventaFinal * 0.75;   // margen 25%
+    const compraSug = reventaFinal * 0.68;   // margen ~32%
+    const compraMin = reventaFinal * 0.65;   // margen 35%
+
+    // Mostrar resultado
+    document.getElementById('res-modelo').textContent =
+      NOMBRES[modeloKey] + ' · ' + storageKey + ' GB · Batería ' + bateria + '%';
+
+    document.getElementById('res-min').textContent = mxn(compraMin);
+    document.getElementById('res-sug').textContent = mxn(compraSug);
+    document.getElementById('res-max').textContent = mxn(compraMax);
+    document.getElementById('res-rev').textContent = mxn(reventaFinal);
+
+    // Desglose
+    document.getElementById('d-base').textContent    = mxn(base);
+    document.getElementById('d-storage').textContent = (storageAdj >= 0 ? '+' : '') + mxn(storageAdj);
+    document.getElementById('d-bat').textContent     = (batAdj >= 0 ? '+' : '') + mxn(batAdj);
+    document.getElementById('d-est').textContent     = mxn(estAdj);
+    document.getElementById('d-func').textContent    = mxn(funcAdj);
+    document.getElementById('d-prob').textContent    = '-' + mxn(probDesc);
+    document.getElementById('d-extra').textContent   = '+' + mxn(extraBonus);
+    document.getElementById('d-rev2').textContent    = mxn(reventaFinal);
+    document.getElementById('d-margen').textContent  =
+      mxn(reventaFinal - compraSug) + ' aprox. (~32%)';
+
+    const res = document.getElementById('resultado');
+    res.style.display = 'block';
+    res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+
+</body>
+</html>
